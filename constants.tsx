@@ -1,32 +1,44 @@
 
-import React from 'react';
 import { DishInfo } from './types';
 
+export const SYSTEM_PROMPT = `You are an AR Menu Specialist. 
+Analyze the provided image of a restaurant menu page. 
+1. Identify the Restaurant Name.
+2. Extract EVERY dish/item listed on this page.
+3. For each item, provide a rich description, price, ingredients, and potential wine/drink pairings.
+4. Provide a short, welcoming summary of this menu section.
+Respond ONLY in a JSON format matching the MenuAnalysis structure.`;
+
+// Fix: Added SAMPLE_DISHES export to resolve the module error in PrintableMenu.tsx
 export const SAMPLE_DISHES: DishInfo[] = [
   {
-    id: 'dish_1',
-    name: 'Truffle Ribeye Steak',
-    description: 'Prime cut ribeye aged for 28 days, served with black truffle butter and roasted asparagus.',
-    price: '$42.00',
-    calories: '850 kcal',
-    ingredients: ['Prime Ribeye', 'Black Truffle', 'Butter', 'Asparagus', 'Sea Salt'],
+    id: '1',
+    name: 'Wild Mushroom Risotto',
+    description: 'Creamy Arborio rice slow-cooked with a medley of forest mushrooms, finished with truffle oil and aged parmesan.',
+    price: '$28',
+    calories: '520 kcal',
+    ingredients: ['Arborio Rice', 'Mushrooms', 'Truffle Oil', 'Parmesan', 'Shallots'],
     allergens: ['Dairy'],
-    pairing: 'Cabernet Sauvignon'
+    pairing: 'Chardonnay or Earthy Pinot Noir'
   },
   {
-    id: 'dish_2',
-    name: 'Lobster Risotto',
-    description: 'Creamy Arborio rice with fresh Atlantic lobster chunks, saffron, and aged parmesan.',
-    price: '$38.00',
-    calories: '620 kcal',
-    ingredients: ['Arborio Rice', 'Lobster', 'Saffron', 'Parmesan', 'Shallots'],
-    allergens: ['Shellfish', 'Dairy'],
-    pairing: 'Chardonnay'
+    id: '2',
+    name: 'Pan-Seared Scallops',
+    description: 'Jumbo sea scallops served over a velvet parsnip purée with crispy pancetta and a lemon-herb gremolata.',
+    price: '$34',
+    calories: '380 kcal',
+    ingredients: ['Sea Scallops', 'Parsnip', 'Pancetta', 'Lemon', 'Parsley'],
+    allergens: ['Shellfish'],
+    pairing: 'Sauvignon Blanc or Sparkling Wine'
+  },
+  {
+    id: '3',
+    name: 'Herb-Crusted Rack of Lamb',
+    description: 'Tender lamb rack with a dijon and herb crust, served with roasted root vegetables and a rosemary reduction.',
+    price: '$42',
+    calories: '740 kcal',
+    ingredients: ['Lamb', 'Rosemary', 'Dijon Mustard', 'Breadcrumbs', 'Root Vegetables'],
+    allergens: ['Gluten'],
+    pairing: 'Cabernet Sauvignon or Syrah'
   }
 ];
-
-export const SYSTEM_PROMPT = `You are a high-end restaurant AI concierge. 
-Analyze the image provided (which is a restaurant menu). 
-Identify the dish the user is pointing at. 
-Provide a rich, appetizing description, nutritional info, and a wine pairing suggestion.
-Respond in a JSON format matching the DishInfo structure.`;

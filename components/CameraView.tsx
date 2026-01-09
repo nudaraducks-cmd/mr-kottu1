@@ -1,17 +1,17 @@
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { geminiService } from '../services/geminiService';
-import { DishInfo } from '../types';
+import { MenuAnalysis } from '../types';
 
 interface CameraViewProps {
-  onDishDetected: (dish: DishInfo) => void;
+  onMenuAnalyzed: (data: MenuAnalysis) => void;
   onError: (msg: string) => void;
   isScanning: boolean;
   setIsScanning: (val: boolean) => void;
 }
 
 export const CameraView: React.FC<CameraViewProps> = ({ 
-  onDishDetected, 
+  onMenuAnalyzed, 
   onError, 
   isScanning,
   setIsScanning 
@@ -23,7 +23,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
   const startCamera = async () => {
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' }, 
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }, 
         audio: false 
       });
       setStream(mediaStream);
@@ -31,7 +31,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
         videoRef.current.srcObject = mediaStream;
       }
     } catch (err) {
-      onError("Camera access denied or not available.");
+      onError("Camera access denied.");
     }
   };
 
@@ -42,7 +42,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
     };
   }, []);
 
-  const captureFrame = useCallback(async () => {
+  const captureFullPage = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) return;
     
     setIsScanning(true);
@@ -57,61 +57,47 @@ export const CameraView: React.FC<CameraViewProps> = ({
       const imageData = canvas.toDataURL('image/jpeg', 0.8);
       
       try {
-        const dish = await geminiService.identifyDish(imageData);
-        onDishDetected(dish);
+        const analysis = await geminiService.analyzeMenuPage(imageData);
+        onMenuAnalyzed(analysis);
       } catch (err) {
         console.error(err);
-        onError("Could not identify the item. Please center the dish name in the frame.");
+        onError("Failed to read menu. Ensure text is clear and well-lit.");
       } finally {
         setIsScanning(false);
       }
     }
-  }, [onDishDetected, onError, setIsScanning]);
+  }, [onMenuAnalyzed, onError, setIsScanning]);
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-black flex items-center justify-center">
-      <video 
-        ref={videoRef} 
-        autoPlay 
-        playsInline 
-        className="w-full h-full object-cover opacity-80"
-      />
+      <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover opacity-90" />
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* AR Framing Overlay */}
+      {/* AR Framing Overlay - Page Style */}
       <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
-        <div className="w-64 h-64 border-2 border-dashed border-white/50 rounded-2xl relative">
-          <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-amber-400 rounded-tl-xl -translate-x-1 -translate-y-1"></div>
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-amber-400 rounded-tr-xl translate-x-1 -translate-y-1"></div>
-          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-amber-400 rounded-bl-xl -translate-x-1 translate-y-1"></div>
-          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-amber-400 rounded-br-xl translate-x-1 translate-y-1"></div>
-          
-          {isScanning && (
-            <div className="absolute left-0 w-full h-1 bg-amber-400/50 shadow-[0_0_15px_rgba(251,191,36,0.8)] scanner-line"></div>
-          )}
+        <div className="w-[80%] h-[70%] border border-white/20 rounded-lg relative overflow-hidden bg-white/5">
+           {/* Scanline Effect */}
+           <div className="absolute top-0 left-0 w-full h-[2px] bg-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.8)] scanner-line"></div>
         </div>
-        <p className="mt-8 text-white/80 font-medium text-sm tracking-widest uppercase">Center Dish in Frame</p>
+        <p className="mt-6 text-white bg-black/40 px-4 py-1 rounded-full text-[10px] tracking-[0.2em] uppercase font-bold">
+          Align Menu Page within Frame
+        </p>
       </div>
 
-      {/* Capture Button */}
-      <div className="absolute bottom-12 left-0 right-0 flex justify-center px-8">
+      <div className="absolute bottom-12 left-0 right-0 flex justify-center">
         <button 
-          onClick={captureFrame}
+          onClick={captureFullPage}
           disabled={isScanning}
-          className={`
-            group relative p-1 rounded-full border-4 border-white transition-all active:scale-95
-            ${isScanning ? 'opacity-50 cursor-not-allowed' : 'hover:border-amber-400'}
-          `}
+          className="relative flex flex-col items-center gap-2 group"
         >
-          <div className={`
-            w-16 h-16 rounded-full transition-all
-            ${isScanning ? 'bg-amber-400' : 'bg-white group-hover:bg-amber-400'}
-          `}></div>
-          {isScanning && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-20 h-20 rounded-full border-4 border-white/30 flex items-center justify-center p-1 group-hover:border-amber-500 transition-all">
+            <div className={`w-full h-full rounded-full ${isScanning ? 'bg-amber-500' : 'bg-white'} transition-all flex items-center justify-center`}>
+               {isScanning && <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
             </div>
-          )}
+          </div>
+          <span className="text-white text-[10px] font-bold tracking-widest uppercase opacity-60">
+            {isScanning ? 'Digitizing...' : 'Scan Menu'}
+          </span>
         </button>
       </div>
     </div>

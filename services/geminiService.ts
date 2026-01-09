@@ -1,16 +1,17 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { DishInfo } from "../types";
+import { MenuAnalysis } from "../types";
 import { SYSTEM_PROMPT } from "../constants";
 
 export class GeminiService {
   private ai: GoogleGenAI;
 
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+    // Fix: Using process.env.API_KEY directly as per SDK guidelines.
+    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   }
 
-  async identifyDish(base64Image: string): Promise<DishInfo> {
+  async analyzeMenuPage(base64Image: string): Promise<MenuAnalysis> {
     const response = await this.ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: {
@@ -21,7 +22,7 @@ export class GeminiService {
               data: base64Image.split(',')[1],
             },
           },
-          { text: "Identify the main dish centered in this menu view and provide detailed information." }
+          { text: "Scan this entire menu page and extract all dishes and information." }
         ],
       },
       config: {
@@ -30,29 +31,34 @@ export class GeminiService {
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            id: { type: Type.STRING },
-            name: { type: Type.STRING },
-            description: { type: Type.STRING },
-            price: { type: Type.STRING },
-            calories: { type: Type.STRING },
-            ingredients: { 
+            restaurantName: { type: Type.STRING },
+            summary: { type: Type.STRING },
+            dishes: {
               type: Type.ARRAY,
-              items: { type: Type.STRING }
-            },
-            allergens: { 
-              type: Type.ARRAY,
-              items: { type: Type.STRING }
-            },
-            pairing: { type: Type.STRING }
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  id: { type: Type.STRING },
+                  name: { type: Type.STRING },
+                  description: { type: Type.STRING },
+                  price: { type: Type.STRING },
+                  calories: { type: Type.STRING },
+                  ingredients: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  allergens: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  pairing: { type: Type.STRING }
+                },
+                required: ["id", "name", "description", "price"]
+              }
+            }
           },
-          required: ["id", "name", "description", "price", "ingredients"]
+          required: ["restaurantName", "dishes"]
         }
       }
     });
 
     const text = response.text;
-    if (!text) throw new Error("Could not identify dish");
-    return JSON.parse(text) as DishInfo;
+    if (!text) throw new Error("Could not analyze menu");
+    return JSON.parse(text) as MenuAnalysis;
   }
 }
 

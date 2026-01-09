@@ -4,17 +4,16 @@ export interface DishInfo {
   name: string;
   description: string;
   price: string;
-  calories: string;
+  calories?: string;
   ingredients: string[];
   allergens: string[];
   pairing?: string;
 }
 
-export interface ARState {
-  isActive: boolean;
-  detectedDish: DishInfo | null;
-  isScanning: boolean;
-  error: string | null;
+export interface MenuAnalysis {
+  restaurantName: string;
+  dishes: DishInfo[];
+  summary: string;
 }
 
 export enum AppMode {
