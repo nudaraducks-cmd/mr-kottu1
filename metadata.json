@@ -1,0 +1,7 @@
+{
+  "name": "Aristo AR - AI Powered Restaurant Menu",
+  "description": "An interactive Web-AR experience that brings restaurant menus to life using Gemini AI and real-time camera processing.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
