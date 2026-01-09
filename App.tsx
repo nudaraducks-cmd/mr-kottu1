@@ -21,15 +21,18 @@ const App: React.FC = () => {
     setTimeout(() => setError(null), 4000);
   };
 
+  // Improved Print Mode container
   if (mode === AppMode.PRINT) {
     return (
-      <div className="relative">
-        <button 
-          onClick={() => setMode(AppMode.HOME)}
-          className="fixed top-6 left-6 z-[100] px-6 py-2 bg-black text-white rounded-full font-bold shadow-xl border border-white/10 print:hidden"
-        >
-          ← Exit Template
-        </button>
+      <div className="min-h-screen bg-white">
+        <div className="fixed top-6 left-6 z-[100] print-hidden">
+          <button 
+            onClick={() => setMode(AppMode.HOME)}
+            className="px-6 py-2 bg-black text-white rounded-full font-bold shadow-xl border border-white/10"
+          >
+            ← Exit Template
+          </button>
+        </div>
         <PrintableMenu />
       </div>
     );

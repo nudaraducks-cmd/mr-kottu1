@@ -4,15 +4,30 @@ import { MenuAnalysis } from "../types";
 import { SYSTEM_PROMPT } from "../constants";
 
 export class GeminiService {
-  private ai: GoogleGenAI;
+  private ai: GoogleGenAI | null = null;
 
-  constructor() {
-    // Fix: Using process.env.API_KEY directly as per SDK guidelines.
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  private getClient(): GoogleGenAI {
+    if (this.ai) return this.ai;
+    
+    // Safely check for process.env. In static hosts, process may be undefined.
+    let apiKey = '';
+    try {
+      apiKey = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY || '' : '';
+    } catch (e) {
+      console.warn("Could not access process.env.API_KEY");
+    }
+
+    if (!apiKey) {
+      console.error("API Key is missing. Gemini AI features will be unavailable.");
+    }
+    
+    this.ai = new GoogleGenAI({ apiKey: apiKey || 'MISSING_KEY' });
+    return this.ai;
   }
 
   async analyzeMenuPage(base64Image: string): Promise<MenuAnalysis> {
-    const response = await this.ai.models.generateContent({
+    const client = this.getClient();
+    const response = await client.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: {
         parts: [

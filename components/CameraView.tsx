@@ -76,8 +76,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
       {/* AR Framing Overlay - Page Style */}
       <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
         <div className="w-[80%] h-[70%] border border-white/20 rounded-lg relative overflow-hidden bg-white/5">
-           {/* Scanline Effect */}
-           <div className="absolute top-0 left-0 w-full h-[2px] bg-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.8)] scanner-line"></div>
+           {/* Scanline Effect removed as requested */}
         </div>
         <p className="mt-6 text-white bg-black/40 px-4 py-1 rounded-full text-[10px] tracking-[0.2em] uppercase font-bold">
           Align Menu Page within Frame
